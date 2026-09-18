@@ -164,6 +164,56 @@ curl -sS "https://market.fuzzwork.co.uk/aggregates/?region=10000002&types=34,35,
 
 `region=10000002` is The Forge, which is what people mean by Jita price. Pass several type IDs comma-separated. Look the IDs up in `invTypes` first.
 
+## The order book lies
+
+Best bid and best ask describe what two people are *asking for*, not what anything is worth. Placing
+a sell order costs a small fee and no commitment, so a single inflated ask makes a dead item look
+like a 90% margin. Anyone screening spreads without checking history will surface those first,
+because they sort to the top by construction.
+
+Never quote a margin, a profit, or a trade recommendation from `buy.max` and `sell.min` alone.
+Price the sell side from what actually traded:
+
+```bash
+curl -sS -H "X-Compatibility-Date: $CD" -A "$UA" \
+  "https://esi.evetech.net/markets/10000002/history?type_id=34" \
+  | jq -c '.[-1] | {date, average, highest, lowest, volume, order_count}'
+```
+
+Daily records go back about a year and carry `average` (volume-weighted actual trades), `highest`,
+`lowest`, `volume` and `order_count`.
+
+Three filters catch nearly all of it:
+
+| filter | catches |
+|---|---|
+| cap the assumed sell at the 90-day median `average` | asks nobody ever paid |
+| reject if the assumed sell exceeds that day's `highest` on more than ~25% of days | the lone fake ask |
+| require `order_count` ≥ 30/day and real `volume` | thin books one person can move |
+
+Expect most candidates to fail. Screening 160 wide spreads in The Forge left 22 survivors, and the
+two highest-margin items were both fiction: one asking 1.92x its 90-day average, having never traded
+that high on any of 90 days.
+
+`scripts/screen_trades.py` implements this. Run it rather than rebuilding the logic:
+
+```bash
+python3 scripts/screen_trades.py --region 10000002 --capital 480000000 --slots 17
+```
+
+Spreads also decay fast. An item screened an hour ago can have its spread closed by the time the
+user places the order, so re-check before recommending action on an old list, and say when the
+numbers were taken.
+
+### Where to look deeper
+
+- [adam4eve.eu](https://www.adam4eve.eu) exists specifically for long-run price history and market
+  manipulation analysis. Reach for it when a single item's behaviour looks strange.
+- [evetycoon.com](https://evetycoon.com) trader-facing margins and history.
+- [jita.space](https://jita.space) for eyeballing an actual order book.
+- [data.everef.net/market-history](https://data.everef.net/market-history/) bulk history dumps for
+  offline work.
+
 ## zKillboard
 
 Recent kills per system. This is the honest answer to "is this route safe", because it shows what actually died rather than what should theoretically be safe.
