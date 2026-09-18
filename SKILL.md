@@ -1,6 +1,6 @@
 ---
 name: eve-data
-description: Query live and static EVE Online data with curl and sqlite3 — ESI, a local SDE dump, Fuzzwork market aggregates, and zKillboard. Use this whenever a question touches item prices or what something is worth, market orders, type IDs, system security, routes and jump counts, planets and PI schematics, industry indices, or recent kills and gank activity in a system. Reach for it even when the user does not name a data source: "is this route safe", "what does a Catalyst cost", "which planets near me have the right resources", "how many jumps to Amarr" are all this skill. Answering those from memory produces stale numbers, so look them up.
+description: Query live and static EVE Online data with curl and sqlite3 — ESI, a local SDE dump, Fuzzwork market aggregates, and zKillboard. Use this whenever a question touches item prices or what something is worth, market orders, type IDs, system security, routes and jump counts, planets and PI schematics, industry indices, or recent kills and gank activity in a system. Reach for it even when the user does not name a data source, since "is this route safe", "what does a Catalyst cost", "which planets near me have the right resources" and "how many jumps to Amarr" are all this skill. Answering those from memory produces stale numbers, so look them up.
 ---
 
 # EVE data
