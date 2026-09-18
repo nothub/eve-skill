@@ -24,6 +24,27 @@ def get(url):
     return json.load(urllib.request.urlopen(urllib.request.Request(url, headers=headers())))
 
 
+
+def tick(price, direction):
+    """Snap to a legal market price.
+
+    Since the 2020 Broker Relations change, order prices carry at most four
+    significant figures; anything finer is silently rounded by the client. So
+    undercutting costs a whole tick, not 0.01 ISK. `direction` is +1 to move one
+    tick up (to outbid) or -1 to move one tick down (to undercut an ask).
+    """
+    import math
+    if price <= 0:
+        return price
+    step = 10 ** (math.floor(math.log10(price)) - 3)
+    snapped = round(price / step) * step
+    if direction > 0 and snapped <= price:
+        snapped += step
+    elif direction < 0 and snapped >= price:
+        snapped -= step
+    return snapped
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--region", type=int, default=10000002, help="default 10000002 (The Forge / Jita)")
@@ -85,8 +106,9 @@ def main():
         if vol < a.min_volume or orders < a.min_orders:
             continue
         avg = statistics.median(d["average"] for d in hist)
-        bid = bid_now + 0.01
-        ask = min(ask_now - 0.01, avg)                 # never assume a sale above what trades
+        bid = tick(bid_now, +1)                       # one tick above the best bid
+        # One tick below the best ask, but never above what actually trades.
+        ask = min(tick(ask_now, -1), tick(avg, -1))
         if bid > avg * 0.95:                           # must buy meaningfully below the traded average
             continue
         if sum(1 for d in hist if ask > d["highest"]) > len(hist) * 0.25:

@@ -201,6 +201,17 @@ that high on any of 90 days.
 python3 scripts/screen_trades.py --region 10000002 --capital 480000000 --slots 17
 ```
 
+### Prices snap to ticks
+
+Order prices carry at most **four significant figures**, a 2020 change made to end 0.01 ISK
+undercutting. The client silently rounds anything finer, so `295999.99` becomes `296000.00` and
+sits level with the order it meant to beat. The step is `10 ** (floor(log10(price)) - 3)`: near
+296,000 the legal prices are 295,900 / 296,000 / 296,100, and near 1,000,000 they are
+999,900 / 1,000,000 / 1,001,000.
+
+Undercutting therefore costs a whole tick, which on a 300k item is 100 ISK rather than a cent.
+Quote only snapped prices to the user; `scripts/screen_trades.py` has a `tick()` helper.
+
 Spreads also decay fast. An item screened an hour ago can have its spread closed by the time the
 user places the order, so re-check before recommending action on an old list, and say when the
 numbers were taken.
