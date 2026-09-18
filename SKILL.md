@@ -66,11 +66,22 @@ If the file is missing, offer that command rather than falling back to guesswork
 | `mapDenormalize` | celestials: planets, moons, belts, with `solarSystemID` and `typeID` |
 | `planetSchematics` | PI recipes, with `cycleTime` in seconds |
 | `planetSchematicsTypeMap` | recipe lines: `isInput` 1 for inputs, 0 for the output |
-| `planetResources` | per-celestial reagent data |
+| `planetResources` | Equinox sovereignty data: power, workforce, Magmatic Gas and Superionic Ice. Not classic PI |
+| `dgmTypeAttributes` + `dgmAttributeTypes` | numeric attributes per type, joined by `attributeID`. Values live in `valueInt` / `valueFloat`, there is no `value` column |
 | `staStations` | NPC stations |
 | `industryActivityMaterials` | manufacturing inputs per blueprint |
 
 Schemas drift between dumps. Run `pragma table_info(<table>)` before trusting a column name from memory.
+
+Classic PI has gaps here. The P0-to-planet-type map and the CPU and power costs of planet pins
+(extractors, factories, launchpads) are not in this dump, so take those from the EVE University
+wiki. Command centers are in `invTypes` as five tiers per planet type, Limited through Elite,
+carrying `cpuOutput` and `powerOutput`, and those tiers are what Command Center Upgrades unlocks.
+
+Before pricing a production chain, check that its inputs actually trade in the region you would
+buy them in. A chain can look excellent on price and be unbuildable: Silicon has zero sell volume
+in Sinq Laison while The Forge holds 20 million units, so any Sinq Laison plan needing it is
+fiction. Compare the `sell.volume` of every input, not just its price.
 
 ### Worked queries
 
