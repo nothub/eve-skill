@@ -25,19 +25,25 @@ git clone git@github.com:nothub/eve-skill.git ~/.claude/skills/eve-data
 
 ## Configure
 
-Two environment variables.
+Three environment variables, all optional. It works out of the box without them.
 
 | variable | meaning | default |
 |---|---|---|
 | `EVE_SDE_DB` | path to the SDE SQLite file | `${XDG_DATA_HOME:-$HOME/.local/share}/eve-sde/sde.db` |
-| `EVE_ESI_UA` | User-Agent with a contact address | none, the skill asks |
+| `EVE_ESI_UA` | product token in the User-Agent | `eve-notes/1.0` |
+| `EVE_ESI_CONTACT` | contact address appended in parentheses | omitted |
 
-CCP requires a User-Agent that identifies who you are, and uses it to contact you when a script
-misbehaves. A made-up address gets your traffic blocked instead of warned, so set a real one:
+CCP asks for a User-Agent that identifies the caller, and uses it to reach you when a script
+misbehaves. Requests work without a contact address, but nobody can warn you before throttling,
+so set one if you use this more than occasionally:
 
 ```sh
-export EVE_ESI_UA='myapp/1.0 (me@example.com)'
+export EVE_ESI_CONTACT='me@example.com'
 ```
+
+The default product token is deliberately dull. `eve-notes/1.0` says a small personal tool is
+calling, which is all an API operator needs to know. Naming the agent or harness behind it invites
+different handling and tells everyone downstream more than the request requires.
 
 ## Static data
 

@@ -20,20 +20,28 @@ Everything here is public and needs no API key. Character-private data (skills, 
 
 ## Setup
 
-Two environment variables. Read them rather than hardcoding, so the skill travels between machines:
+Three environment variables, all optional. Read them rather than hardcoding, so the skill travels between machines:
 
 | variable | meaning | default if unset |
 |---|---|---|
 | `EVE_SDE_DB` | path to the SDE SQLite file | `${XDG_DATA_HOME:-$HOME/.local/share}/eve-sde/sde.db` |
-| `EVE_ESI_UA` | User-Agent with a contact address | none, ask the user |
-
-CCP requires a User-Agent identifying who you are, and uses it to contact you when a script misbehaves. Invent an address and your traffic gets blocked instead of warned, so when `EVE_ESI_UA` is unset, ask the user for one rather than making one up.
+| `EVE_ESI_UA` | product token in the User-Agent | `eve-notes/1.0` |
+| `EVE_ESI_CONTACT` | contact address appended in parentheses | omitted |
 
 ```bash
 SDE="${EVE_SDE_DB:-${XDG_DATA_HOME:-$HOME/.local/share}/eve-sde/sde.db}"
-UA="${EVE_ESI_UA:?set EVE_ESI_UA, e.g. 'myapp/1.0 (me@example.com)'}"
+UA="${EVE_ESI_UA:-eve-notes/1.0}${EVE_ESI_CONTACT:+ ($EVE_ESI_CONTACT)}"
 CD="2026-08-18"   # ESI compatibility date, see below
 ```
+
+CCP asks for a User-Agent that identifies the caller, and uses it to reach you when a script
+misbehaves. Without `EVE_ESI_CONTACT` the requests still work, but CCP has no way to warn you
+before throttling, so mention it once to the user and carry on rather than blocking on it. Never
+invent an address: a fake contact is worse than none, because it reads as evasion.
+
+Keep the product token boring and tool-shaped. `eve-notes/1.0` says a small personal tool is
+calling. A name advertising an AI agent or a specific harness invites different handling of your
+traffic, and tells every operator downstream more about the caller than the request needs to.
 
 ## SDE (static data)
 
@@ -102,7 +110,7 @@ Trade hubs: Jita 30000142, Amarr 30002187, Dodixie 30002659, Rens 30002510, Hek 
 
 Base `https://esi.evetech.net`. Two headers on every request:
 
-- **User-Agent** with contact details, per the setup section above.
+- **User-Agent**, built in the setup section above as `$UA`.
 - **`X-Compatibility-Date`.** ESI versions by date instead of by route. The list is at `/meta/compatibility-dates/`; `2026-08-18` was newest as of that date. Pin a date rather than tracking the newest, so a schema change never silently alters an answer.
 
 ```bash
