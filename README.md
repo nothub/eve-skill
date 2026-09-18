@@ -1,6 +1,6 @@
 # eve-data
 
-A Claude Code skill for querying EVE Online data: [ESI](https://esi.evetech.net), a local copy of
+An agent skill for querying EVE Online data: [ESI](https://esi.evetech.net), a local copy of
 the Static Data Export, [Fuzzwork](https://market.fuzzwork.co.uk) market aggregates, and
 [zKillboard](https://zkillboard.com).
 
